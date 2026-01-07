@@ -7,6 +7,7 @@ from langchain_openai import ChatOpenAI
 from langchain_ollama.chat_models import ChatOllama
 from langchain_community.chat_models import ChatDeepInfra
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_aws import ChatBedrockConverse
 from common import Task, get_or_fail
 from executor import executor_run
 #from kalissh import SshExecuteTool, SSHConnection
@@ -49,12 +50,18 @@ async def main(conn:SSHConnection) -> None:
     # llm_with_tools = ChatOpenAI(model="gpt-4.1", temperature=0).bind_tools(tools)
     #llm_with_tools = ChatOllama(model="qwen3:latest", temperature=0).bind_tools(tools)
     #llm_with_tools = ChatDeepInfra(model='deepseek-ai/DeepSeek-V3-0324').bind_tools(tools)
-    llm_with_tools = ChatGoogleGenerativeAI(
+    '''llm_with_tools = ChatGoogleGenerativeAI(
     model='gemini-2.5-flash-preview-05-20',
     temperature=0.8,
     max_tokens=None,
-    ).bind_tools(tools)
+    ).bind_tools(tools)'''
 
+    llm_with_tools = ChatBedrockConverse(
+        model="model_id",
+        region_name="eu-north-1",
+        temperature=0,
+        max_tokens=4096 
+    ).bind_tools(tools)
 
     # TODO: add (optional) hint to the task context
     

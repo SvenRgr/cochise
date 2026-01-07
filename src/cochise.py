@@ -4,6 +4,7 @@ import pathlib
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_aws import ChatBedrockConverse
 from common import Task, get_or_fail
 from executor import executor_run
 from ptt import PlanTestTreeStrategy
@@ -21,7 +22,7 @@ console = Console()
 
 # setup configuration from environment variables
 load_dotenv()
-get_or_fail("OPENAI_API_KEY") # langgraph will use this env variable itself
+#get_or_fail("OPENAI_API_KEY") # langgraph will use this env variable itself
 conn = get_ssh_connection_from_env()
 
 logger = Logger()
@@ -58,7 +59,47 @@ def setup_openai_llms():
 
     return llm_strategy, llm_with_tools, llm_summary
 
-llm_strategy, llm_with_tools, llm_summary = setup_gemini_llms()
+
+
+def setup_bedrock_llms():
+
+    '''
+    Potential models:
+    "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+    "global.anthropic.claude-haiku-4-5-20251001-v1:0"
+    '''
+    region = "eu-north-1" 
+
+    llm_strategy = ChatBedrockConverse(
+        model="global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+        region_name=region,
+        temperature=0,
+        max_tokens=4096 
+    )
+
+    llm_with_tools = ChatBedrockConverse(
+        model="global.anthropic.claude-sonnet-4-5-20250929-v1:0",
+        region_name=region,
+        temperature=0,
+        max_tokens=4096
+    ).bind_tools(tools)
+
+    llm_summary = ChatBedrockConverse(
+        model="global.anthropic.claude-haiku-4-5-20251001-v1:0",
+        region_name=region,
+        temperature=0,
+        max_tokens=4096
+    )
+
+    return llm_strategy, llm_with_tools, llm_summary
+
+
+# Choose which LLM setup to use
+#llm_strategy, llm_with_tools, llm_summary = setup_gemini_llms()
+#llm_strategy, llm_with_tools, llm_summary = setup_openai_llms()
+llm_strategy, llm_with_tools, llm_summary = setup_bedrock_llms()    # AWS Bedrock credentials must be configured
+
+
 
 # TODO: we could use a cached (auto-generated) plan here instead of
 # creating a new one every run
