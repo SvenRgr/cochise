@@ -223,6 +223,54 @@ The installation can last around 2--3 hours. After this step, 5 VMWare
 virtual machines running in the `192.168.56.0/24` network should be
 running.
 
+### GOAD Setup Sven
+As I experienced several issues regarding the installation of GOAD-Light wit vmware, I tried to use VirtualBox
+Installation steps:
+
+Install virtual box and the extension pack
+https://www.virtualbox.org/wiki/Linux_Downloads
+https://www.virtualbox.org/wiki/Downloads
+
+```shell
+sudo apt update && sudo apt upgrade -y
+sudo apt install virtualbox -y
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install vagrant -y
+vagrant plugin install vagrant-reload
+vagrant plugin install vagrant-vbguest
+vagrant plugin install winrm
+vagrant plugin install winrm-fs
+vagrant plugin install winrm-elevated
+
+sudo apt install python3-pip python3-venv git -y
+
+python3 -m pip install --upgrade pip
+python3 -m pip install ansible-core==2.12.6
+python3 -m pip install pywinrm
+```
+
+``` shell
+git clone https://github.com/Orange-Cyberdefense/GOAD.git
+cd GOAD
+chmod +x goad.sh
+./goad.sh -t check -l GOAD -p virtualbox -m local # check if all requirements are satisfied
+./goad.sh -t install -l GOAD -p virtualbox -m local
+```
+
+``` shell
+$ sudo modprobe -r kvm_intel  # Use kvm_amd if you have an AMD CPU
+$ sudo modprobe -r kvm
+$ sudo nano /etc/modprobe.d/blacklist-kvm.conf
+```
+- add the following lines:
+blacklist kvm_intel
+blacklist kvm
+
+
+
+
+
 ## Kali Linux Virtual Machine Setup
 
 We are using the pre-made Kali Linux VMWare virtual machine (VM) from
