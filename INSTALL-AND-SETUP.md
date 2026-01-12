@@ -234,14 +234,10 @@ https://www.virtualbox.org/wiki/Downloads
 ```shell
 sudo apt update && sudo apt upgrade -y
 sudo apt install virtualbox -y
-wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update && sudo apt install vagrant -y
-vagrant plugin install vagrant-reload
-vagrant plugin install vagrant-vbguest
-vagrant plugin install winrm
-vagrant plugin install winrm-fs
-vagrant plugin install winrm-elevated
+wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install vagrant
+vagrant plugin install vagrant-reload vagrant-vbguest winrm winrm-fs winrm-elevated
 
 sudo apt install python3-pip python3-venv git -y
 
@@ -254,8 +250,8 @@ python3 -m pip install pywinrm
 git clone https://github.com/Orange-Cyberdefense/GOAD.git
 cd GOAD
 chmod +x goad.sh
-./goad.sh -t check -l GOAD -p virtualbox -m local # check if all requirements are satisfied
-./goad.sh -t install -l GOAD -p virtualbox -m local
+./goad.sh -t check -l GOAD-Light -p virtualbox -m local # check if all requirements are satisfied
+./goad.sh -t install -l GOAD-Light -p virtualbox -m local
 ```
 
 ``` shell
