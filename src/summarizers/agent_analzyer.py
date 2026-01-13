@@ -138,10 +138,10 @@ class AgentAnalyzer:
         ]
         llm_with_tools = self.llm.bind_tools(tools)
 
-        # create a string -> tool mapping
+        # create a string -> tool mapping using the tool's name attribute
         mapping = {}
         for tool in tools:
-            mapping[tool.__class__.__name__] = tool
+            mapping[tool.name] = tool
 
         prompt=f"""
 Update the task plan (see system message for details).
@@ -192,8 +192,15 @@ Make sure to note down all compromised accounts and entities and update the plan
 
             if is_tool_call(ai_msg):
                 for tool_call in ai_msg.tool_calls:
-                    result = mapping[tool_call["name"]].invoke(tool_call["args"])
-                    self.console.print(Panel(Pretty(tool_call['args'] | {'result': result}), title=f"Tool {tool_call['name']}"))
+                    tool_name = tool_call["name"]
+                    if tool_name not in mapping:
+                        # LLM called an unavailable tool (e.g., SshExecuteTool from executor context)
+                        error_msg = f"Tool '{tool_name}' is not available. Available tools: {list(mapping.keys())}"
+                        self.console.print(Panel(error_msg, title=f"Tool Error: {tool_name}"))
+                        messages.append(ToolMessage(content=error_msg, tool_call_id=tool_call['id']))
+                        continue
+                    result = mapping[tool_name].invoke(tool_call["args"])
+                    self.console.print(Panel(Pretty(tool_call['args'] | {'result': result}), title=f"Tool {tool_name}"))
                     messages.append(ToolMessage(content=result, tool_call_id=tool_call['id']))
             else:
                 # workaround for gemini output
